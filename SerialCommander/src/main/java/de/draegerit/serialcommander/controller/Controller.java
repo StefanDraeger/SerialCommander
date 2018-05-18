@@ -27,6 +27,7 @@ public class Controller implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case BEENDEN_MITEM:
+			System.exit(0);
 			break;
 		}
 

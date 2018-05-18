@@ -1,11 +1,16 @@
 package de.draegerit.serialcommander.view;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 public class View extends JFrame {
@@ -13,6 +18,11 @@ public class View extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	private JMenuItem beendenMItem;
+	private JTextField commandTextField;
+	private JButton sendCommandButton;
+	private JTextArea konsoleTextArea;
+	private JPanel commandPanel;
+	
 
 	public View() {
 		super();
@@ -26,6 +36,25 @@ public class View extends JFrame {
 		this.setJMenuBar(generateMenuBar());
 		this.setLayout(new BorderLayout());
 		this.add(createToolBar(),BorderLayout.NORTH);
+		this.add(createKonsole(),BorderLayout.CENTER);
+	}
+
+	private JPanel createKonsole() {
+		JPanel konsolePanel = new JPanel(new BorderLayout());
+		
+		konsoleTextArea = new JTextArea();
+		konsoleTextArea.setEditable(false);
+		konsolePanel.add(konsoleTextArea,BorderLayout.CENTER);
+		
+		commandPanel = new JPanel(new BorderLayout());
+		commandTextField = new JTextField();
+		commandPanel.add(commandTextField,BorderLayout.CENTER);
+		sendCommandButton = new JButton("Senden");
+		sendCommandButton.setPreferredSize(new Dimension(90,20));
+		commandPanel.add(sendCommandButton,BorderLayout.EAST);
+		konsolePanel.add(commandPanel,BorderLayout.NORTH);
+		
+		return konsolePanel;
 	}
 
 	private JToolBar createToolBar() {
@@ -53,6 +82,14 @@ public class View extends JFrame {
 
 	public void setBeendenMItem(JMenuItem beendenMItem) {
 		this.beendenMItem = beendenMItem;
+	}
+
+	public JTextArea getKonsoleTextArea() {
+		return konsoleTextArea;
+	}
+
+	public void setKonsoleTextArea(JTextArea konsoleTextArea) {
+		this.konsoleTextArea = konsoleTextArea;
 	}
 
 }
