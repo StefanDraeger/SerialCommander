@@ -3,22 +3,29 @@ package de.draegerit.serialcommander.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
-import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
+import de.draegerit.serialcommander.XMouseListener;
 import de.draegerit.serialcommander.util.EAppIcons;
 import de.draegerit.serialcommander.util.ResourceUtil;
+import de.draegerit.serialcommander.view.ConnectionItem.ConnectionItemType;
 
 public class NewConnectionDialog extends JDialog implements ActionListener {
 
@@ -26,6 +33,15 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 	private static final String OK_BUTTON = "OK_BUTTON";
 	private static final String ABORT_BUTTON = "ABORT_BUTTON";
+
+	private JPanel contentPanel;
+	private JList<ConnectionItem> listView;
+
+	private Integer[] baudrate = { 300, 600, 1200, 1800, 2400, 3600, 4800, 7200, 9600, 14400, 19200, 28800, 38400,
+			57600, 115200, 230400 };
+	private Integer[] dataBits = { 5, 6, 7, 8 };
+	private String[] parity = { "none", "odd", "even" };
+	private Float[] stopBits = { 1f, 1.5f, 2f };
 
 	private View view;
 
@@ -37,12 +53,13 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 	private void initForm() {
 		this.setTitle("Neue Verbindung...");
-		this.setBounds(0, 0, 600, 450);
+		this.setBounds(0, 0, 550, 450);
 		this.setLocationRelativeTo(view);
 		this.setModal(true);
 		this.setLayout(new BorderLayout());
 		this.add(createContent(), BorderLayout.CENTER);
 		this.add(createBottomPane(), BorderLayout.SOUTH);
+		listView.setSelectedIndex(1);
 		this.setVisible(true);
 	}
 
@@ -64,16 +81,16 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 	}
 
 	private JSplitPane createContent() {
-		JPanel panel = new JPanel();
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(), panel);
+		contentPanel = new JPanel();
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(), contentPanel);
 		splitPane.setDividerLocation(150);
 		return splitPane;
 	}
 
 	private JList<ConnectionItem> createMenuList() {
-		ConnectionItem[] data = { new ConnectionItem("serieller Port ", EAppIcons.PLUG) };
+		ConnectionItem[] data = { new ConnectionItem("serieller Port ", EAppIcons.PLUG, ConnectionItemType.SERIAL) };
 
-		JList<ConnectionItem> listView = new JList<ConnectionItem>(data);
+		listView = new JList<ConnectionItem>(data);
 		listView.setCellRenderer(new ListCellRenderer<ConnectionItem>() {
 
 			@Override
@@ -86,6 +103,76 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 				lbl.setBackground(cellHasFocus ? new Color(224, 224, 255) : Color.WHITE);
 				return lbl;
 			}
+		});
+		listView.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				ConnectionItem selectedValue = listView.getSelectedValue();
+				if (selectedValue != null) {
+					contentPanel.removeAll();
+					switch (selectedValue.getConnectionItemType()) {
+					case SERIAL:
+						showSerialSettings();
+						break;
+					default:
+						break;
+
+					}
+				}
+			}
+
+			private void showSerialSettings() {
+				JPanel pnl = new JPanel(new GridLayout(0, 3));
+
+				pnl.add(createLabel("Port:"));
+				JComboBox<String> portCombobox = new JComboBox<String>();
+				pnl.add(portCombobox);
+				pnl.add(createHelpImage(EHelp.SETTINGS_PORT));
+
+				pnl.add(new JLabel("Baudrate:"));
+				JComboBox<Integer> baudrateCombobox = new JComboBox<Integer>(baudrate);
+				pnl.add(baudrateCombobox);
+				pnl.add(createHelpImage(EHelp.SETTINGS_BAUDRATE));
+
+				pnl.add(new JLabel("Data Bits:"));
+				JComboBox<Integer> dataBitsCombobox = new JComboBox<Integer>(dataBits);
+				pnl.add(dataBitsCombobox);
+				pnl.add(createHelpImage(EHelp.SETTINGS_DATABITS));
+
+				pnl.add(new JLabel("Parity:"));
+				JComboBox<String> parityCombobox = new JComboBox<String>(parity);
+				pnl.add(parityCombobox);
+				pnl.add(createHelpImage(EHelp.SETTINGS_PARITY));
+
+				pnl.add(new JLabel("Stop Bits:"));
+				JComboBox<Float> stopBitsCombobox = new JComboBox<Float>(stopBits);
+				pnl.add(stopBitsCombobox);
+				pnl.add(createHelpImage(EHelp.SETTINGS_STOPBITS));
+
+				contentPanel.add(pnl);
+			}
+
+			private JLabel createHelpImage(final EHelp setting) {
+				JLabel lbl = new JLabel();
+				lbl.setIcon(ResourceUtil.getIcon(EAppIcons.HELP));
+				lbl.addMouseListener(new XMouseListener() {
+
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						view.showHelp(setting, (JComponent) e.getSource());
+					}
+
+				});
+				return lbl;
+			}
+
+			private JLabel createLabel(String text) {
+				JLabel lbl = new JLabel(text);
+				lbl.setPreferredSize(new Dimension(100, 20));
+				return lbl;
+			}
+
 		});
 
 		return listView;
@@ -105,7 +192,13 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 	}
 
 	private void saveAndDispose() {
+		this.view.createNewConnectionTab(readSettings());
 		this.dispose();
+	}
+
+	private ConnectionSettings readSettings() {
+		
+		return null;
 	}
 
 }

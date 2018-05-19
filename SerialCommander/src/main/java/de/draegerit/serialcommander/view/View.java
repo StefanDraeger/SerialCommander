@@ -4,10 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -37,6 +39,7 @@ public class View extends JFrame {
 	
 	private JButton exitButton;
 	private JButton newButton;
+	private JButton saveButton;
 	private JButton removeButton;
 	private JButton commandButton;
 	
@@ -59,10 +62,6 @@ public class View extends JFrame {
 
 	private JTabbedPane createKonsole() {
 		tabPane = new JTabbedPane();
-				
-		tabPane.addTab("Test123  ",ResourceUtil.getIcon(EAppIcons.TAB), createTerminal(),"Tooltip");
-		tabPane.addTab("Test123  ",ResourceUtil.getIcon(EAppIcons.TAB), createTerminal(),"Tooltip");
-		
 		return tabPane;
 	}
 
@@ -96,9 +95,15 @@ public class View extends JFrame {
 		newButton = generateToolBarButton("Neu", EAppIcons.NEU);
 		toolBar.add(newButton);
 		
+		saveButton = generateToolBarButton("Speichern", EAppIcons.SAVE);
+		saveButton.setEnabled(false);
+		toolBar.add(saveButton);
+		
 		removeButton = generateToolBarButton("Schlieﬂen", EAppIcons.REMOVE);
+		removeButton.setEnabled(false);
 		toolBar.add(removeButton);
 		
+		toolBar.addSeparator();
 		
 //		commandButton = new JButton(ResourceUtil.getIcon(EAppIcons.COMMANDLINE));
 //		commandButton.setText("Commandozeile");
@@ -176,6 +181,22 @@ public class View extends JFrame {
 
 	public JButton getRemoveButton() {
 		return removeButton;
+	}
+
+	public void createNewConnectionTab(ConnectionSettings settings) {
+		tabPane.addTab("Test123  ",ResourceUtil.getIcon(EAppIcons.TAB), createTerminal(),"Tooltip");		
+	}
+
+	public JButton getSaveButton() {
+		return saveButton;
+	}
+
+	public void setSaveButton(JButton saveButton) {
+		this.saveButton = saveButton;
+	}
+
+	public void showHelp(EHelp help, JComponent parent) {
+		JOptionPane.showMessageDialog(parent, HelpUtil.getText(help),"Hilfe...",JOptionPane.OK_OPTION,ResourceUtil.getIcon(EAppIcons.HELP_BIG));		
 	}
 
 }

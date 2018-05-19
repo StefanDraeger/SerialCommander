@@ -63,6 +63,7 @@ public class Controller implements ActionListener {
 		boolean allTabsClosed = view.getTabPane().getTabCount() == 0;
 		this.view.getAktivesFensterSchliessenMItem().setEnabled(!allTabsClosed);
 		this.view.getRemoveButton().setEnabled(!allTabsClosed);
+		this.view.getSaveButton().setEnabled(!allTabsClosed);
 	}
 
 	public void showView() {
@@ -81,6 +82,7 @@ public class Controller implements ActionListener {
 			break;
 		case NEU_BUTTON:
 			new NewConnectionDialog(this.view);
+			disableIfAllTabsClose();
 			break;
 		}
 

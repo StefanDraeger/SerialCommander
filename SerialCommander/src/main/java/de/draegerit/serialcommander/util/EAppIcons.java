@@ -1,7 +1,7 @@
 package de.draegerit.serialcommander.util;
 
 public enum EAppIcons {
-	COMMANDLINE("commandline.png"), EXIT("exit.png"), TAB("plug.png"), NEU("new.png"), REMOVE("remove.png"), OK("ok.png"), ABORT("abort.png"),PLUG("plug.png");
+	COMMANDLINE("commandline.png"), EXIT("exit.png"), TAB("plug.png"), NEU("new.png"), REMOVE("remove.png"), OK("ok.png"), ABORT("abort.png"),PLUG("plug.png"), SAVE("save.png"), HELP("help.png"), HELP_BIG("help_big.png");
 
 	private String filename;
 
