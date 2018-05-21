@@ -5,7 +5,7 @@ import de.draegerit.serialcommander.util.EAppIcons;
 public class ConnectionItem {
 
 	enum ConnectionItemType {
-		SERIAL;
+		SERIAL, GENERAL, LOGFILE;
 	}
 
 	private String text;

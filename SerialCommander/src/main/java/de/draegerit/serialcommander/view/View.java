@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -65,7 +66,7 @@ public class View extends JFrame {
 		return tabPane;
 	}
 
-	private JPanel createTerminal() {
+	private JPanel createTerminal(ConnectionSettings settings) {
 		JPanel konsolePanel = new JPanel(new BorderLayout());
 		
 		konsoleTextArea = new JTextArea();
@@ -79,6 +80,9 @@ public class View extends JFrame {
 		sendCommandButton.setPreferredSize(new Dimension(90,20));
 		commandPanel.add(sendCommandButton,BorderLayout.EAST);
 		konsolePanel.add(commandPanel,BorderLayout.NORTH);
+		
+		String parameter = String.format("Port: %s | Baudrate:%d | Data Bits:%d | Parity:%s | Stop Bits:%.1f%n", settings.getPort(), settings.getBaudrate(), settings.getDataBits(), settings.getParity(), settings.getStopBits());
+		konsolePanel.add(new JLabel(parameter),BorderLayout.SOUTH);
 		
 		return konsolePanel;
 	}
@@ -184,7 +188,7 @@ public class View extends JFrame {
 	}
 
 	public void createNewConnectionTab(ConnectionSettings settings) {
-		tabPane.addTab("Test123  ",ResourceUtil.getIcon(EAppIcons.TAB), createTerminal(),"Tooltip");		
+		tabPane.addTab(settings.getTabText()+"   ",ResourceUtil.getIcon(EAppIcons.TAB), createTerminal(settings),"Tooltip");		
 	}
 
 	public JButton getSaveButton() {

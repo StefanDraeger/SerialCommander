@@ -5,19 +5,27 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -34,6 +42,8 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 	private static final String OK_BUTTON = "OK_BUTTON";
 	private static final String ABORT_BUTTON = "ABORT_BUTTON";
 
+	private ConnectionSettings settings = new ConnectionSettings();
+
 	private JPanel contentPanel;
 	private JList<ConnectionItem> listView;
 
@@ -42,6 +52,8 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 	private Integer[] dataBits = { 5, 6, 7, 8 };
 	private String[] parity = { "none", "odd", "even" };
 	private Float[] stopBits = { 1f, 1.5f, 2f };
+
+	private String[] datumFormat = { "MM.DD.YYYY HH:mm:SS", "HH:mm:SS", "YYYY/MM/DD HH:mm:SS" };
 
 	private View view;
 
@@ -53,7 +65,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 	private void initForm() {
 		this.setTitle("Neue Verbindung...");
-		this.setBounds(0, 0, 550, 450);
+		this.setBounds(0, 0, 750, 450);
 		this.setLocationRelativeTo(view);
 		this.setModal(true);
 		this.setLayout(new BorderLayout());
@@ -82,13 +94,16 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 	private JSplitPane createContent() {
 		contentPanel = new JPanel();
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(), contentPanel);
-		splitPane.setDividerLocation(150);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(), new JScrollPane(contentPanel));
+		splitPane.setDividerLocation(190);
 		return splitPane;
 	}
 
 	private JList<ConnectionItem> createMenuList() {
-		ConnectionItem[] data = { new ConnectionItem("serieller Port ", EAppIcons.PLUG, ConnectionItemType.SERIAL) };
+		ConnectionItem[] data = {
+				new ConnectionItem("Allgemeine Einstellungen ", EAppIcons.COMMANDLINE, ConnectionItemType.GENERAL),
+				new ConnectionItem("serieller Port ", EAppIcons.PLUG, ConnectionItemType.SERIAL),
+				new ConnectionItem("Logger ", EAppIcons.LOGFILE, ConnectionItemType.LOGFILE) };
 
 		listView = new JList<ConnectionItem>(data);
 		listView.setCellRenderer(new ListCellRenderer<ConnectionItem>() {
@@ -108,16 +123,26 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				ConnectionItem selectedValue = listView.getSelectedValue();
-				if (selectedValue != null) {
-					contentPanel.removeAll();
-					switch (selectedValue.getConnectionItemType()) {
-					case SERIAL:
-						showSerialSettings();
-						break;
-					default:
-						break;
+				if (e.getValueIsAdjusting()) {
+					ConnectionItem selectedValue = listView.getSelectedValue();
+					if (selectedValue != null) {
+						contentPanel.removeAll();
+						contentPanel.repaint();
+						switch (selectedValue.getConnectionItemType()) {
+						case GENERAL:
+							showGeneralSettings();
+							break;
+						case SERIAL:
+							showSerialSettings();
+							break;
+						case LOGFILE:
+							showLogfile();
+							break;
+						default:
+							break;
 
+						}
+						contentPanel.updateUI();
 					}
 				}
 			}
@@ -127,30 +152,129 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(createLabel("Port:"));
 				JComboBox<String> portCombobox = new JComboBox<String>();
+				portCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						String port = (String) e.getItem();
+						settings.setPort(port);
+					}
+				});
 				pnl.add(portCombobox);
 				pnl.add(createHelpImage(EHelp.SETTINGS_PORT));
 
 				pnl.add(new JLabel("Baudrate:"));
 				JComboBox<Integer> baudrateCombobox = new JComboBox<Integer>(baudrate);
+				baudrateCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						int baudrate = (int) e.getItem();
+						settings.setBaudrate(baudrate);
+					}
+				});
 				pnl.add(baudrateCombobox);
 				pnl.add(createHelpImage(EHelp.SETTINGS_BAUDRATE));
 
 				pnl.add(new JLabel("Data Bits:"));
 				JComboBox<Integer> dataBitsCombobox = new JComboBox<Integer>(dataBits);
+				dataBitsCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						int dataBits = (int) e.getItem();
+						settings.setDataBits(dataBits);
+					}
+				});
 				pnl.add(dataBitsCombobox);
 				pnl.add(createHelpImage(EHelp.SETTINGS_DATABITS));
 
 				pnl.add(new JLabel("Parity:"));
 				JComboBox<String> parityCombobox = new JComboBox<String>(parity);
+				parityCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						String parity = (String) e.getItem();
+						settings.setParity(parity);
+					}
+				});
 				pnl.add(parityCombobox);
 				pnl.add(createHelpImage(EHelp.SETTINGS_PARITY));
 
 				pnl.add(new JLabel("Stop Bits:"));
 				JComboBox<Float> stopBitsCombobox = new JComboBox<Float>(stopBits);
+				stopBitsCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						float stopBits = (float) e.getItem();
+						settings.setStopBits(stopBits);
+					}
+				});
 				pnl.add(stopBitsCombobox);
 				pnl.add(createHelpImage(EHelp.SETTINGS_STOPBITS));
 
 				contentPanel.add(pnl);
+			}
+
+			private void showGeneralSettings() {
+				JPanel pnl = new JPanel(new GridLayout(0, 3));
+				pnl.add(createLabel("Tab Titel:"));
+				final JTextField tabTextField = new JTextField("unbenannt");
+				tabTextField.addKeyListener(new KeyListener() {
+
+					@Override
+					public void keyTyped(KeyEvent e) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void keyReleased(KeyEvent e) {
+						settings.setTabText(tabTextField.getText());
+					}
+
+					@Override
+					public void keyPressed(KeyEvent e) {
+					}
+				});
+				pnl.add(tabTextField);
+				pnl.add(createHelpImage(EHelp.TAB_TITEL));
+				contentPanel.add(pnl);
+			}
+
+			protected void showLogfile() {
+				JPanel pnl = new JPanel(new GridLayout(0, 3));
+				pnl.add(createLabel("loggen aktivieren"));
+				JCheckBox logginAktivierenCheckBox = new JCheckBox(" ");
+				pnl.add(logginAktivierenCheckBox);
+				pnl.add(createHelpImage(EHelp.LOGFILE_AKTIVE));
+
+				pnl.add(createLabel("Datumsformat:"));
+				JComboBox<String> datumsformatCombobox = new JComboBox<String>(datumFormat);
+				datumsformatCombobox.addItemListener(new ItemListener() {
+
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						String datumFormat = (String) e.getItem();
+						settings.setDatumFormat(datumFormat);
+					}
+				});
+				pnl.add(datumsformatCombobox);
+				pnl.add(createHelpImage(EHelp.LOGFILE_NAME));
+
+				pnl.add(createLabel("Dateiname:"));
+				JLabel filenameLbl = new JLabel(generateDateiname());
+				filenameLbl.setFont(new Font("Arial",Font.PLAIN,10));
+				pnl.add(filenameLbl);
+				pnl.add(createHelpImage(EHelp.LOGFILE_NAME));
+
+				contentPanel.add(pnl);
+			}
+
+			private String generateDateiname() {
+				return String.format("%s_%s", settings.getDatumFormat(), settings.getTabText());
 			}
 
 			private JLabel createHelpImage(final EHelp setting) {
@@ -169,7 +293,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 			private JLabel createLabel(String text) {
 				JLabel lbl = new JLabel(text);
-				lbl.setPreferredSize(new Dimension(100, 20));
+				lbl.setPreferredSize(new Dimension(80, 20));
 				return lbl;
 			}
 
@@ -192,13 +316,14 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 	}
 
 	private void saveAndDispose() {
-		this.view.createNewConnectionTab(readSettings());
-		this.dispose();
+		if (settingsValid()) {
+			this.view.createNewConnectionTab(this.settings);
+			this.dispose();
+		}
 	}
 
-	private ConnectionSettings readSettings() {
-		
-		return null;
+	private boolean settingsValid() {
+		return true;
 	}
 
 }
