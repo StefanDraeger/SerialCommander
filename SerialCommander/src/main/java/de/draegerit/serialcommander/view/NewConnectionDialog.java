@@ -22,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -94,7 +95,8 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 	private JSplitPane createContent() {
 		contentPanel = new JPanel();
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(), new JScrollPane(contentPanel));
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createMenuList(),
+				new JScrollPane(contentPanel));
 		splitPane.setDividerLocation(190);
 		return splitPane;
 	}
@@ -152,6 +154,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(createLabel("Port:"));
 				JComboBox<String> portCombobox = new JComboBox<String>();
+				portCombobox.setSelectedItem(settings.getPort());
 				portCombobox.addItemListener(new ItemListener() {
 
 					@Override
@@ -165,6 +168,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(new JLabel("Baudrate:"));
 				JComboBox<Integer> baudrateCombobox = new JComboBox<Integer>(baudrate);
+				baudrateCombobox.setSelectedItem(settings.getBaudrate());
 				baudrateCombobox.addItemListener(new ItemListener() {
 
 					@Override
@@ -178,6 +182,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(new JLabel("Data Bits:"));
 				JComboBox<Integer> dataBitsCombobox = new JComboBox<Integer>(dataBits);
+				dataBitsCombobox.setSelectedItem(settings.getDataBits());
 				dataBitsCombobox.addItemListener(new ItemListener() {
 
 					@Override
@@ -191,6 +196,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(new JLabel("Parity:"));
 				JComboBox<String> parityCombobox = new JComboBox<String>(parity);
+				parityCombobox.setSelectedItem(settings.getParity());
 				parityCombobox.addItemListener(new ItemListener() {
 
 					@Override
@@ -204,6 +210,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 
 				pnl.add(new JLabel("Stop Bits:"));
 				JComboBox<Float> stopBitsCombobox = new JComboBox<Float>(stopBits);
+				stopBitsCombobox.setSelectedItem(settings.getStopBits());
 				stopBitsCombobox.addItemListener(new ItemListener() {
 
 					@Override
@@ -221,7 +228,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 			private void showGeneralSettings() {
 				JPanel pnl = new JPanel(new GridLayout(0, 3));
 				pnl.add(createLabel("Tab Titel:"));
-				final JTextField tabTextField = new JTextField("unbenannt");
+				final JTextField tabTextField = new JTextField(settings.getTabText());
 				tabTextField.addKeyListener(new KeyListener() {
 
 					@Override
@@ -252,6 +259,7 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 				pnl.add(createHelpImage(EHelp.LOGFILE_AKTIVE));
 
 				pnl.add(createLabel("Datumsformat:"));
+				final JLabel filenameLbl = new JLabel(generateDateiname());
 				JComboBox<String> datumsformatCombobox = new JComboBox<String>(datumFormat);
 				datumsformatCombobox.addItemListener(new ItemListener() {
 
@@ -259,16 +267,17 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 					public void itemStateChanged(ItemEvent e) {
 						String datumFormat = (String) e.getItem();
 						settings.setDatumFormat(datumFormat);
+						filenameLbl.setText(generateDateiname());
 					}
 				});
 				pnl.add(datumsformatCombobox);
 				pnl.add(createHelpImage(EHelp.LOGFILE_NAME));
 
 				pnl.add(createLabel("Dateiname:"));
-				JLabel filenameLbl = new JLabel(generateDateiname());
-				filenameLbl.setFont(new Font("Arial",Font.PLAIN,10));
+				
+				filenameLbl.setFont(new Font("Arial", Font.PLAIN, 10));
 				pnl.add(filenameLbl);
-				pnl.add(createHelpImage(EHelp.LOGFILE_NAME));
+				pnl.add(createHelpImage(EHelp.LOGFILE_FILENAME));
 
 				contentPanel.add(pnl);
 			}
@@ -319,11 +328,13 @@ public class NewConnectionDialog extends JDialog implements ActionListener {
 		if (settingsValid()) {
 			this.view.createNewConnectionTab(this.settings);
 			this.dispose();
+		} else {
+			JOptionPane.showMessageDialog(view, "Bitte prüfe deine Einstellungen!","Fehler...", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	private boolean settingsValid() {
-		return true;
+		return settings.getPort() != null;
 	}
 
 }
